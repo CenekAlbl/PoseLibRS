@@ -62,7 +62,38 @@ struct CameraPose {
     inline Eigen::Vector3d center() const { return -derotate(t); }
 };
 
+struct RSCameraPose {
+    // RS camera that projects 3D points as x = Rw(u)*R(q)*X + t + u*v
+    // where u is the RS driving coordinate 
+    // R(q) is represented as a unit quaternion
+    // with real part first, i.e. QW, QX, QY, QZ
+    // Rw is represented as a angle-axis vector w that describes a rotation per unit of u
+    // 
+    Eigen::Vector4d q;
+    Eigen::Vector3d w;
+    Eigen::Vector3d t,v;
+
+    // Constructors (Defaults to identity camera)
+    RSCameraPose() : q(1.0, 0.0, 0.0, 0.0), w(0.0, 0.0, 0.0), t(0.0, 0.0, 0.0), v(0.0, 0.0, 0.0) {}
+    RSCameraPose(const Eigen::Vector4d &q, const Eigen::Vector3d &w, const Eigen::Vector3d &t, const Eigen::Vector3d &v) : q(q), w(w), t(t), v(v) {}
+
+    // Helper functions
+    inline Eigen::Matrix3d R() const { return quat_to_rotmat(q); }
+    inline Eigen::Matrix<double, 3, 4> Rt() const {
+        Eigen::Matrix<double, 3, 4> tmp;
+        tmp.block<3, 3>(0, 0) = quat_to_rotmat(q);
+        tmp.col(3) = t;
+        return tmp;
+    }
+    inline Eigen::Vector3d rotate(const Eigen::Vector3d &p) const { return quat_rotate(q, p); }
+    inline Eigen::Vector3d derotate(const Eigen::Vector3d &p) const { return quat_rotate(quat_conj(q), p); }
+    inline Eigen::Vector3d apply(const Eigen::Vector3d &p) const { return rotate(p) + t; }
+
+    inline Eigen::Vector3d center() const { return -derotate(t); }
+};
+
 typedef std::vector<CameraPose> CameraPoseVector;
+typedef std::vector<RSCameraPose> RSCameraPoseVector;
 } // namespace poselib
 
 #endif
