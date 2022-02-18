@@ -71,7 +71,8 @@ struct RSCameraPose {
     // 
     Eigen::Vector4d q;
     Eigen::Vector3d w;
-    Eigen::Vector3d t,v;
+    Eigen::Vector3d t;
+    Eigen::Vector3d v;
 
     // Constructors (Defaults to identity camera)
     RSCameraPose() : q(1.0, 0.0, 0.0, 0.0), w(0.0, 0.0, 0.0), t(0.0, 0.0, 0.0), v(0.0, 0.0, 0.0) {}

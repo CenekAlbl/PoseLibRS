@@ -273,9 +273,10 @@ std::pair<RSCameraPose, py::dict> estimate_rs_absolute_pose_wrapper(const std::v
 
     RSCameraPose pose;
     std::vector<char> inlier_mask;
-
+    py::print("running RANSAC");
     RansacStats stats = estimate_rs_absolute_pose(points2D, points3D, ransac_opt, bundle_opt, &pose, &inlier_mask);
-
+    // RansacStats stats;
+    py::print("RANSAC DONE");
     py::dict output_dict;
     write_to_dict(stats, output_dict);
     output_dict["inliers"] = convert_inlier_vector(inlier_mask);

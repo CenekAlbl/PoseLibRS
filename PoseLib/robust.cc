@@ -96,7 +96,7 @@ RansacStats estimate_rs_absolute_pose(const std::vector<Point2D> &points2D, cons
             points3D_inliers.push_back(points3D[k]);
         }
 
-        bundle_adjust(points2D_inliers, points3D_inliers, pose, bundle_opt);
+        // bundle_adjust(points2D_inliers, points3D_inliers, pose, bundle_opt);
     }
 
     return stats;

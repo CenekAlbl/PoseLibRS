@@ -36,7 +36,7 @@
 namespace poselib {
 
     // Solves for RS camera pose 
-    int r6p(const std::vector<Eigen::Vector2d> &x, const std::vector<Eigen::Vector3d> &X, RSCameraPoseVector *output);
+    int r6p(const std::vector<Eigen::Vector2d> &x, const std::vector<Eigen::Vector3d> &X, std::vector<RSCameraPose> *output);
 
 } // namespace poselib
 

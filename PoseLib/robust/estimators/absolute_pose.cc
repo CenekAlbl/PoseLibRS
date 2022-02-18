@@ -70,6 +70,7 @@ void RSAbsolutePoseEstimator::generate_models(std::vector<RSCameraPose> *models)
         Xs[k] = X[sample[k]];
     }
     r6p(xs, Xs, models);
+    models->clear();
 }
 
 double RSAbsolutePoseEstimator::score_model(const RSCameraPose &pose, size_t *inlier_count) const {

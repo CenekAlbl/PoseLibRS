@@ -101,7 +101,7 @@ std::vector<Eigen::Vector3d> solve_xy_from_AM(double * z, int nroots, Eigen::Mat
 	return sols;
 }
 
-int r6pSingleLin(const  Eigen::MatrixXd & X, const  Eigen::MatrixXd & u, const Eigen::MatrixXd & ud, int direction, double r0, int maxpow, RSCameraPoseVector * results) {
+int r6pSingleLin(const  Eigen::MatrixXd & X, const  Eigen::MatrixXd & u, const Eigen::MatrixXd & ud, int direction, double r0, int maxpow, std::vector<RSCameraPose> * results) {
 	Eigen::VectorXd coeffs(1260);
 	Eigen::MatrixXd CC = Eigen::MatrixXd::Zero(99, 163);
 
@@ -176,13 +176,6 @@ int r6pSingleLin(const  Eigen::MatrixXd & X, const  Eigen::MatrixXd & u, const E
 		q.normalize();
 		quat2R(q, R);
 
-		Eigen::Quaternion quat = Eigen::Quaternion<double>(R);
-        Eigen::Vector4d quat_res;
-        quat_res[0] = quat.w();
-        quat_res[1] = quat.x();
-        quat_res[2] = quat.y();
-        quat_res[3] = quat.z();
-
 		//std::cout << R;
 		Eigen::MatrixXd A(18, 9);
 		Eigen::VectorXd b(18);
@@ -201,7 +194,7 @@ int r6pSingleLin(const  Eigen::MatrixXd & X, const  Eigen::MatrixXd & u, const E
 		Eigen::VectorXd wCt = A.householderQr().solve(b);
 
 
-		results->push_back({quat_res, wCt.segment(3,3), wCt.segment(0,3), wCt.segment(6,3)});
+		results->push_back({q, wCt.segment(0,3), wCt.segment(3,3),  wCt.segment(6,3)});
 
 	}
 
@@ -215,7 +208,7 @@ int R6P1Lin(const Eigen::MatrixXd &X, const Eigen::MatrixXd &u, int direction, d
 }
 
 // 
-int r6p(const std::vector<Eigen::Vector2d> &x, const std::vector<Eigen::Vector3d> &X, RSCameraPoseVector *output) {
+int r6p(const std::vector<Eigen::Vector2d> &x, const std::vector<Eigen::Vector3d> &X, std::vector<RSCameraPose> *output) {
     if (x.size() != 6 || X.size() != 6){
         std::cout << "Wrong number of input correspondences";
         return 0;
