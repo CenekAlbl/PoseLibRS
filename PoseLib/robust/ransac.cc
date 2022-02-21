@@ -63,9 +63,7 @@ RansacStats ransac_rnp(const std::vector<Point2D> &x, const std::vector<Point3D>
     best_model->v.setZero();
     RSAbsolutePoseEstimator estimator(opt, x, X);
     RansacStats stats = ransac<RSAbsolutePoseEstimator>(estimator, opt, best_model);
-
     get_inliers(*best_model, x, X, opt.max_reproj_error * opt.max_reproj_error, best_inliers);
-
     return stats;
 }
 

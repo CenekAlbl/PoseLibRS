@@ -76,7 +76,7 @@ struct RSCameraPose {
 
     // Constructors (Defaults to identity camera)
     RSCameraPose() : q(1.0, 0.0, 0.0, 0.0), w(0.0, 0.0, 0.0), t(0.0, 0.0, 0.0), v(0.0, 0.0, 0.0) {}
-    RSCameraPose(const Eigen::Vector4d &q, const Eigen::Vector3d &w, const Eigen::Vector3d &t, const Eigen::Vector3d &v) : q(q), w(w), t(t), v(v) {}
+    RSCameraPose(const Eigen::Vector4d &qq, const Eigen::Vector3d &ww, const Eigen::Vector3d &tt, const Eigen::Vector3d &vv) : q(qq), w(ww), t(tt), v(vv) {}
 
     // Helper functions
     inline Eigen::Matrix3d R() const { return quat_to_rotmat(q); }
@@ -93,9 +93,12 @@ struct RSCameraPose {
     inline Eigen::Matrix3d Rs(double u) const {
         Eigen::Matrix3d R, K;
         double theta = std::abs(u) * w.norm();
+        R.setIdentity();
+        if(theta == 0){
+            return R;
+        }
         Eigen::Vector3d wh = (u * w) / theta;
         K = skew(wh);
-        R.setIdentity();
         R += std::sin(theta) * K + (1.0 - std::cos(theta)) * K * K;
         return R;
     }

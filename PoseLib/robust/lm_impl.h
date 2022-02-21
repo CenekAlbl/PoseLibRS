@@ -53,7 +53,6 @@ BundleStats lm_impl(Problem &problem, Param *parameters, const BundleOptions &op
     constexpr int n_params = Problem::num_params;
     Eigen::Matrix<double, n_params, n_params> JtJ;
     Eigen::Matrix<double, n_params, 1> Jtr;
-
     // Initialize
     BundleStats stats;
     stats.cost = problem.residual(*parameters);

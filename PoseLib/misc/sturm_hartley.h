@@ -515,9 +515,6 @@ int sbisect(int np, poly *sseq,
          }
 
       if (its == MAXIT) {
-         fprintf(stderr, "sbisect: overflow min %f max %f\
-                         diff %e nroot %d n1 %d n2 %d\n",
-                         min, max, max - min, nroot, n1, n2);
          roots[0] = mid;
          }
 
@@ -546,10 +543,6 @@ int sbisect(int np, poly *sseq,
       }
 
    if (its == MAXIT) {
-      fprintf(stderr, "sbisect: roots too close together\n");
-      fprintf(stderr, "sbisect: overflow min %f max %f diff %e\
-                      nroot %d n1 %d n2 %d\n",
-                      min, max, max - min, nroot, n1, n2);
       for (n1 = atmax; n1 < atmin; n1++)
          roots[n1 - atmax] = mid;
       }

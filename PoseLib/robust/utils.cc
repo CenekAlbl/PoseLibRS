@@ -29,6 +29,7 @@
 #include "utils.h"
 
 #include "PoseLib/misc/essential.h"
+#include <iostream>
 
 namespace poselib {
 
@@ -67,7 +68,6 @@ double compute_msac_score(const RSCameraPose &pose, const std::vector<Point2D> &
     *inlier_count = 0;
     double score = 0.0;
     const Eigen::Matrix3d R = pose.R();
-
     for (size_t k = 0; k < x.size(); ++k) {
         const double X0 = X[k](0), X1 = X[k](1), X2 = X[k](2);
         const double x0 = x[k](0), x1 = x[k](1);

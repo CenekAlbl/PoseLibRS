@@ -273,10 +273,8 @@ std::pair<RSCameraPose, py::dict> estimate_rs_absolute_pose_wrapper(const std::v
 
     RSCameraPose pose;
     std::vector<char> inlier_mask;
-    py::print("running RANSAC");
     RansacStats stats = estimate_rs_absolute_pose(points2D, points3D, ransac_opt, bundle_opt, &pose, &inlier_mask);
     // RansacStats stats;
-    py::print("RANSAC DONE");
     py::dict output_dict;
     write_to_dict(stats, output_dict);
     output_dict["inliers"] = convert_inlier_vector(inlier_mask);
@@ -771,7 +769,7 @@ PYBIND11_MODULE(poselib, m) {
         .def_readwrite("v", &poselib::RSCameraPose::v)
     
         .def("__repr__", [](const poselib::RSCameraPose &a) {
-            return "[q: " + toString(a.q.transpose()) + ", " + "t: " + toString(a.t.transpose()) + "]";
+            return "[q: " + toString(a.q.transpose()) + ", " + "t: " + toString(a.t.transpose()) + "w: " + toString(a.w.transpose()) + "v: " + toString(a.v.transpose()) + "]";
         });
 
     py::class_<poselib::PairwiseMatches>(m, "PairwiseMatches")

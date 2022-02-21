@@ -70,14 +70,20 @@ void RSAbsolutePoseEstimator::generate_models(std::vector<RSCameraPose> *models)
         Xs[k] = X[sample[k]];
     }
     r6p(xs, Xs, models);
-    models->clear();
 }
 
 double RSAbsolutePoseEstimator::score_model(const RSCameraPose &pose, size_t *inlier_count) const {
-    return compute_msac_score(pose, x, X, opt.max_reproj_error * opt.max_reproj_error, inlier_count);
+    double score = compute_msac_score(pose, x, X, opt.max_reproj_error * opt.max_reproj_error, inlier_count);
+    return score;
+    
 }
 
 void RSAbsolutePoseEstimator::refine_model(RSCameraPose *pose) const {
+    BundleOptions bundle_opt;
+    bundle_opt.loss_type = BundleOptions::LossType::TRUNCATED;
+    bundle_opt.loss_scale = opt.max_reproj_error;
+    bundle_opt.max_iterations = 25;
+    bundle_adjust(x, X, pose, bundle_opt);
 }
 
 void GeneralizedAbsolutePoseEstimator::generate_models(std::vector<CameraPose> *models) {

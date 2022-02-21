@@ -77,10 +77,8 @@ RansacStats estimate_rs_absolute_pose(const std::vector<Point2D> &points2D, cons
                                    const BundleOptions &bundle_opt, RSCameraPose *pose, std::vector<char> *inliers) {
     
 
-
-
+                              
     RansacStats stats = ransac_rnp(points2D, points3D, ransac_opt, pose, inliers);
-
     if (stats.num_inliers > 6) {
         // Collect inlier for additional bundle adjustment
         std::vector<Point2D> points2D_inliers;
@@ -96,7 +94,7 @@ RansacStats estimate_rs_absolute_pose(const std::vector<Point2D> &points2D, cons
             points3D_inliers.push_back(points3D[k]);
         }
 
-        // bundle_adjust(points2D_inliers, points3D_inliers, pose, bundle_opt);
+        bundle_adjust(points2D_inliers, points3D_inliers, pose, bundle_opt);
     }
 
     return stats;

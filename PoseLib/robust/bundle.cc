@@ -179,16 +179,15 @@ BundleStats bundle_adjust(const std::vector<Point2D> &x, const std::vector<Point
 }
 
 // Entry point for PnP refinement
-BundleStats bundle_adjust(const std::vector<Point2D> &x, const std::vector<Point3D> &X,
-                          RSCameraPose *pose, const BundleOptions &opt, const std::vector<double> &weights) {
-    if (weights.size() == x.size()) {
-        return bundle_adjust<std::vector<double>>(x, X, pose, opt, weights);
-    } else {
+BundleStats bundle_adjust(const std::vector<Point2D> &x, const std::vector<Point3D> &X, RSCameraPose *pose,
+                          const BundleOptions &opt, const std::vector<double> &weights) {            
+    if (weights.size() == x.size()) {             
+        return bundle_adjust<std::vector<double>>(x, X, pose, opt, weights);   
+    } else {         
         return bundle_adjust<UniformWeightVector>(x, X, pose, opt, UniformWeightVector());
     }
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////
+}         
+////////////////////////////////////////////////////////////////////////////////////////////////////
 // Absolute pose with points and lines (PnPL)
 // Note that we currently do not support different camera models here
 // TODO: decide how to handle lines for non-linear camera models...
