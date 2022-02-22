@@ -215,7 +215,12 @@ class RollingShutterJacobianAccumulator {
         Eigen::Matrix3d R = pose.R();
 
         double theta = pose.w.norm();
-        Eigen::Vector3d wh = pose.w / theta;
+        Eigen::Vector3d wh;
+        if(std::abs(theta)<1e-15){
+            wh = Eigen::Vector3d::Zero();
+        }else{
+            wh = pose.w / theta;
+        }
         Eigen::Matrix3d K, K2;
         K = skew(wh);
         K2 = K*K;
@@ -316,7 +321,12 @@ class RollingShutterJacobianAccumulator {
         pose_new.t = pose.t + dp.block<3, 1>(3, 0);
 
         const double theta = pose.w.norm();
-        const Eigen::Vector3d wh = pose.w / theta;
+        Eigen::Vector3d wh;
+        if(std::abs(theta)<1e-15){
+            wh = Eigen::Vector3d::Zero();
+        }else{
+            wh = pose.w / theta;
+        }
 
         const double theta_new = theta + dp(6);
         pose_new.w = theta_new * (wh + tangent_basis * dp.block<2,1>(7,0)).normalized();

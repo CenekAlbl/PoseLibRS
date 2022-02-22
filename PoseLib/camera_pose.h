@@ -94,7 +94,7 @@ struct RSCameraPose {
         Eigen::Matrix3d R, K;
         double theta = std::abs(u) * w.norm();
         R.setIdentity();
-        if(theta == 0){
+        if(std::abs(theta)<1e-15){
             return R;
         }
         Eigen::Vector3d wh = (u * w) / theta;
