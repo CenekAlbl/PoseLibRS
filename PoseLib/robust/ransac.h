@@ -43,6 +43,9 @@ RansacStats ransac_pnp(const std::vector<Point2D> &x, const std::vector<Point3D>
 RansacStats ransac_rnp(const std::vector<Point2D> &x, const std::vector<Point3D> &X, const RansacOptions &opt,
                        RSCameraPose *best_model, std::vector<char> *best_inliers);
 
+RansacStats ransac_pnp_rs_lo(const std::vector<Point2D> &x, const std::vector<Point3D> &X, const RansacOptions &opt,
+                       RSCameraPose *best_model, std::vector<char> *best_inliers);
+
 RansacStats ransac_gen_pnp(const std::vector<std::vector<Point2D>> &x, const std::vector<std::vector<Point3D>> &X,
                            const std::vector<CameraPose> &camera_ext, const RansacOptions &opt, CameraPose *best_model,
                            std::vector<std::vector<char>> *best_inliers);
@@ -76,6 +79,8 @@ RansacStats ransac_hybrid_pose(const std::vector<Point2D> &points2D, const std::
 RansacStats ransac_1D_radial_pnp(const std::vector<Point2D> &x, const std::vector<Point3D> &X, const RansacOptions &opt,
                                  CameraPose *best_model, std::vector<char> *best_inliers);
 
+// Initializes RS model from GS model
+RSCameraPose model_upgrader(const CameraPose &model1);
 } // namespace poselib
 
 #endif

@@ -53,6 +53,8 @@ struct RansacStats {
     size_t num_inliers = 0;
     double inlier_ratio = 0;
     double model_score = std::numeric_limits<double>::max();
+    std::vector<int> iteration_times_us; 
+    std::vector<int> inliers_per_iteration;
 };
 
 struct BundleOptions {
