@@ -17,6 +17,7 @@ set(SOURCES
     solvers/up4pl.cc
     solvers/ugp4pl.cc
     solvers/r6p.cc
+    solvers/r6p_iterative.cpp
     solvers/relpose_upright_3pt.cc
     solvers/relpose_upright_planar_2pt.cc
     solvers/relpose_upright_planar_3pt.cc
