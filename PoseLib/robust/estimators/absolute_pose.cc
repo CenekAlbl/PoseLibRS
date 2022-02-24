@@ -36,6 +36,7 @@
 #include "PoseLib/solvers/p3p.h"
 #include "PoseLib/solvers/r6p.h"
 #include "PoseLib/solvers/p5lp_radial.h"
+#include "PoseLib/misc/quaternion.h"
 
 namespace poselib {
 
@@ -79,6 +80,35 @@ double RSAbsolutePoseEstimator::score_model(const RSCameraPose &pose, size_t *in
 }
 
 void RSAbsolutePoseEstimator::refine_model(RSCameraPose *pose) const {
+    BundleOptions bundle_opt;
+    bundle_opt.loss_type = BundleOptions::LossType::TRUNCATED;
+    bundle_opt.loss_scale = opt.max_reproj_error;
+    bundle_opt.max_iterations = 25;
+    bundle_adjust(x, X, pose, bundle_opt);
+}
+
+void RSIterAbsolutePoseEstimator::generate_models(std::vector<RSCameraPose> *models) {
+    sampler.generate_sample(&sample);
+    for (size_t k = 0; k < sample_sz; ++k) {
+        xs[k] = x[sample[k]];
+        Xs[k] = R_init*X[sample[k]];
+    }
+    iterative_r6p(xs, Xs, models, 1);
+    for(size_t i=0; i< models->size(); i++){
+        (*models)[i].q = rotmat_to_quat(quat_to_rotmat((*models)[i].q)*R_init);
+    }
+}
+
+double RSIterAbsolutePoseEstimator::score_model(const RSCameraPose &pose, size_t *inlier_count) const {
+    double score = compute_msac_score(pose, x, X, opt.max_reproj_error * opt.max_reproj_error, inlier_count);
+    return score;
+}
+
+void RSIterAbsolutePoseEstimator::init(const CameraPose &pose){
+    R_init = pose.R();
+}
+
+void RSIterAbsolutePoseEstimator::refine_model(RSCameraPose *pose) const {
     BundleOptions bundle_opt;
     bundle_opt.loss_type = BundleOptions::LossType::TRUNCATED;
     bundle_opt.loss_scale = opt.max_reproj_error;

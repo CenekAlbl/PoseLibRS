@@ -37,7 +37,7 @@ namespace poselib {
 
     // Solves for RS camera pose 
     int r6p(const std::vector<Eigen::Vector2d> &x, const std::vector<Eigen::Vector3d> &X, std::vector<RSCameraPose> *output);
-    int iterative_r6p(const std::vector<Eigen::Vector2d> &x, const std::vector<Eigen::Vector3d>, std::vector<RSCameraPose>);
+    int iterative_r6p(const std::vector<Eigen::Vector2d> &x, const std::vector<Eigen::Vector3d> &X, std::vector<RSCameraPose> *output, int direction);
 
 } // namespace poselib
 

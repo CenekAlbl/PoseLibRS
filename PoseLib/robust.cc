@@ -128,6 +128,34 @@ RansacStats estimate_pnp_rs_lo_absolute_pose(const std::vector<Point2D> &points2
     return stats;
 }
 
+RansacStats estimate_pnp_r6p_iter_rs_lo_absolute_pose(const std::vector<Point2D> &points2D, const std::vector<Point3D> &points3D,
+                                   const RansacOptions &ransac_opt,
+                                   const BundleOptions &bundle_opt, RSCameraPose *pose, std::vector<char> *inliers) {
+    
+
+                              
+    RansacStats stats = ransac_pnp_r6p_iter_rs_lo(points2D, points3D, ransac_opt, pose, inliers);
+    if (stats.num_inliers > 6) {
+        // Collect inlier for additional bundle adjustment
+        std::vector<Point2D> points2D_inliers;
+        std::vector<Point3D> points3D_inliers;
+        points2D_inliers.reserve(points2D.size());
+        points3D_inliers.reserve(points3D.size());
+
+
+        for (size_t k = 0; k < points2D.size(); ++k) {
+            if (!(*inliers)[k])
+                continue;
+            points2D_inliers.push_back(points2D[k]);
+            points3D_inliers.push_back(points3D[k]);
+        }
+
+        bundle_adjust(points2D_inliers, points3D_inliers, pose, bundle_opt);
+    }
+
+    return stats;
+}
+
 RansacStats estimate_generalized_absolute_pose(const std::vector<std::vector<Point2D>> &points2D,
                                                const std::vector<std::vector<Point3D>> &points3D,
                                                const std::vector<CameraPose> &camera_ext,

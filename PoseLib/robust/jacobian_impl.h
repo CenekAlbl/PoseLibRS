@@ -217,7 +217,7 @@ class RollingShutterJacobianAccumulator {
         double theta = pose.w.norm();
         Eigen::Vector3d wh;
         if(std::abs(theta)<1e-15){
-            wh = Eigen::Vector3d::Zero();
+            wh = Eigen::Vector3d(1,0,0);
         }else{
             wh = pose.w / theta;
         }
@@ -323,7 +323,7 @@ class RollingShutterJacobianAccumulator {
         const double theta = pose.w.norm();
         Eigen::Vector3d wh;
         if(std::abs(theta)<1e-15){
-            wh = Eigen::Vector3d::Zero();
+            wh = Eigen::Vector3d(1,0,0);
         }else{
             wh = pose.w / theta;
         }

@@ -95,6 +95,39 @@ class RSAbsolutePoseEstimator {
     std::vector<size_t> sample;
 };
 
+class RSIterAbsolutePoseEstimator {
+  public:
+    RSIterAbsolutePoseEstimator(const RansacOptions &ransac_opt, const std::vector<Point2D> &points2D,
+                          const std::vector<Point3D> &points3D)
+        : num_data(points2D.size()), opt(ransac_opt), x(points2D), X(points3D),
+          sampler(num_data, sample_sz, opt.seed, opt.progressive_sampling, opt.max_prosac_iterations) {
+        xs.resize(sample_sz);
+        Xs.resize(sample_sz);
+        sample.resize(sample_sz);
+        R_init = Eigen::Matrix3d::Identity();
+    }
+
+    void generate_models(std::vector<RSCameraPose> *models);
+    double score_model(const RSCameraPose &pose, size_t *inlier_count) const;
+    void refine_model(RSCameraPose *pose) const;
+    void init(const CameraPose &pose);
+
+    const size_t sample_sz = 6;
+    const size_t num_data;
+
+  private:
+    const RansacOptions &opt;
+    const std::vector<Point2D> &x;
+    const std::vector<Point3D> &X;
+    Eigen::Matrix3d R_init;
+
+    RandomSampler sampler;
+    // pre-allocated vectors for sampling
+    std::vector<Point2D> xs;
+    std::vector<Point3D> Xs;
+    std::vector<size_t> sample;
+};
+
 class GeneralizedAbsolutePoseEstimator {
   public:
     GeneralizedAbsolutePoseEstimator(const RansacOptions &ransac_opt, const std::vector<std::vector<Point2D>> &points2D,

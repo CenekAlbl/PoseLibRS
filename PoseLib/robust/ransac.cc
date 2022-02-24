@@ -75,7 +75,21 @@ RansacStats ransac_pnp_rs_lo(const std::vector<Point2D> &x, const std::vector<Po
     best_model->v.setZero();
     AbsolutePoseEstimator estimator(opt, x, X);
     RSAbsolutePoseEstimator refiner(opt, x, X);
-    RansacStats stats = multi_model_ransac<AbsolutePoseEstimator,RSAbsolutePoseEstimator,CameraPose,RSCameraPose>(estimator, refiner, opt, best_model);
+    RansacStats stats = different_lo_model_ransac<AbsolutePoseEstimator,RSAbsolutePoseEstimator,CameraPose,RSCameraPose>(estimator, refiner, opt, best_model);
+    get_inliers(*best_model, x, X, opt.max_reproj_error * opt.max_reproj_error, best_inliers);
+    return stats;
+}
+
+RansacStats ransac_pnp_r6p_iter_rs_lo(const std::vector<Point2D> &x, const std::vector<Point3D> &X, const RansacOptions &opt,
+                       RSCameraPose *best_model, std::vector<char> *best_inliers) {
+
+    best_model->q << 1.0, 0.0, 0.0, 0.0;
+    best_model->t.setZero();
+    best_model->w.setZero();
+    best_model->v.setZero();
+    AbsolutePoseEstimator estimator1(opt, x, X);
+    RSIterAbsolutePoseEstimator estimator2(opt, x, X);
+    RansacStats stats = double_model_ransac<AbsolutePoseEstimator,RSIterAbsolutePoseEstimator,CameraPose,RSCameraPose>(estimator1, estimator2, opt, best_model);
     get_inliers(*best_model, x, X, opt.max_reproj_error * opt.max_reproj_error, best_inliers);
     return stats;
 }
@@ -235,6 +249,15 @@ RSCameraPose model_upgrader(const CameraPose &model1){
     model2.q = model1.q;
     model2.t = model1.t;
     return model2;
+}
+
+std::vector<Eigen::Vector3d> pre_rotate_pts(const std::vector<Eigen::Vector3d> & pts_in, const Eigen::Matrix3d & R){
+    std::vector<Eigen::Vector3d> pts_out;
+    pts_out.resize(pts_in.size());
+    for(size_t i = 0; i < pts_in.size(); i++){
+        pts_out[i] = R*pts_in[i];
+    }
+    return pts_out;
 }
 
 } // namespace poselib

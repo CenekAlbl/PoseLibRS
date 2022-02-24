@@ -1,5 +1,6 @@
 #include "r6p.h"
 #include "PoseLib/misc/utils.h"
+#include "PoseLib/misc/quaternion.h"
 
 namespace poselib{
 
@@ -8,7 +9,6 @@ struct R6PIterResult{
     Eigen::Vector3d C;
     Eigen::Vector3d v;
     Eigen::Vector3d t;
-
 };
 
 double calcErrAlgebraicR6PFocalRadialDoubleLin(Eigen::Vector3d vr, Eigen::Vector3d Cr, Eigen::Vector3d wr, Eigen::Vector3d tr, Eigen::MatrixXd X, Eigen::MatrixXd u){
@@ -22,6 +22,37 @@ double calcErrAlgebraicR6PFocalRadialDoubleLin(Eigen::Vector3d vr, Eigen::Vector
         err += eq.cwiseAbs().sum();
     }
     return err;
+}
+
+void inputSwitchDirection(Eigen::MatrixXd &X, Eigen::MatrixXd &u){
+	Eigen::VectorXd temp1 = X.row(0);
+	Eigen::VectorXd temp2 = u.row(0);
+	X.row(0) = X.row(1);
+	X.row(1) = temp1;
+	u.row(0) = u.row(1);
+	u.row(1) = temp2; 
+}
+
+
+RSCameraPose outputSwitchDirection(const RSCameraPose & in){
+	RSCameraPose out;
+    Eigen::Matrix3d R = in.R();
+    Eigen::Vector3d temp;
+    temp = R.row(1);
+    R.row(1) = R.row(0);
+    R.row(0) = temp;
+    out.q = rotmat_to_quat(R);
+	out.w(0) = - in.w(1);
+	out.w(1) = - in.w(0);
+	out.w(2) = - in.w(2);
+	out.t(0) = in.t(1);
+	out.t(1) = in.t(0);
+	out.t(2) = in.t(2);
+	out.v(0) = in.v(1);
+	out.v(1) = in.v(0);
+	out.v(2) = in.v(2);	
+
+	return out;
 }
 
 R6PIterResult R6PIter(const Eigen::MatrixXd & X, const Eigen::MatrixXd & u, const Eigen::Vector3d & vk){
@@ -64,10 +95,12 @@ R6PIterResult R6PIter(const Eigen::MatrixXd & X, const Eigen::MatrixXd & u, cons
 }
 
 
-int iterative_r6p(const std::vector<Eigen::Vector2d> &x, const std::vector<Eigen::Vector3d> &X, int maxIter, std::vector<RSCameraPose> results){
+int iterative_r6p(const std::vector<Eigen::Vector2d> &x, const std::vector<Eigen::Vector3d> &X, std::vector<RSCameraPose> * results, int direction){
     if (x.size() != 6 || X.size() != 6){
         return 0;
     }
+
+    
     
     Eigen::MatrixXd xin(2,6);
     Eigen::MatrixXd Xin(3,6);
@@ -78,6 +111,10 @@ int iterative_r6p(const std::vector<Eigen::Vector2d> &x, const std::vector<Eigen
     for(size_t i = 0; i < X.size(); i++) {
         Xin.col(i) = X[i];
     }
+
+    if(direction){
+        inputSwitchDirection(Xin, xin);
+    }
     
     int notFound = 1;
     int k = 0;
@@ -86,10 +123,6 @@ int iterative_r6p(const std::vector<Eigen::Vector2d> &x, const std::vector<Eigen
     
     while(notFound && k < 5){
         R6PIterResult res = R6PIter(xin, Xin, result.v); 
-        // if the inner solver returned no solution
-        if(!results.size()){
-            return 0;
-        }
         
         double errNew = calcErrAlgebraicR6PFocalRadialDoubleLin(res.v, res.C, res.w, res.t,  Xin,  xin);
         if(errNew < errPrev){
@@ -107,7 +140,11 @@ int iterative_r6p(const std::vector<Eigen::Vector2d> &x, const std::vector<Eigen
         k++;       
     }
 
-    results.push_back(result);
+    if(direction){
+        result = outputSwitchDirection(result);
+    }
+
+    results->push_back(result);
     return 1;
 }
 

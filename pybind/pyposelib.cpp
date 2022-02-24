@@ -41,6 +41,12 @@ std::vector<RSCameraPose> r6p_wrapper(const std::vector<Eigen::Vector2d> &x, con
     return output;
 }
 
+std::vector<RSCameraPose> r6p_iter_wrapper(const std::vector<Eigen::Vector2d> &x, const std::vector<Eigen::Vector3d> &X) {
+    std::vector<RSCameraPose> output;
+    iterative_r6p(x, X, &output, 1);
+    return output;
+}
+
 std::vector<CameraPose> gp3p_wrapper(const std::vector<Eigen::Vector3d> &p, const std::vector<Eigen::Vector3d> &x,
                                      const std::vector<Eigen::Vector3d> &X) {
     std::vector<CameraPose> output;
@@ -297,6 +303,29 @@ std::pair<RSCameraPose, py::dict> estimate_pnp_rs_lo_absolute_pose_wrapper(const
     RSCameraPose pose;
     std::vector<char> inlier_mask;
     RansacStats stats = estimate_pnp_rs_lo_absolute_pose(points2D, points3D, ransac_opt, bundle_opt, &pose, &inlier_mask);
+    // RansacStats stats;
+    py::dict output_dict;
+    write_to_dict(stats, output_dict);
+    output_dict["inliers"] = convert_inlier_vector(inlier_mask);
+
+    return std::make_pair(pose, output_dict);
+}
+
+std::pair<RSCameraPose, py::dict> estimate_pnp_r6p_iter_rs_lo_absolute_pose_wrapper(const std::vector<Eigen::Vector2d> points2D,
+                                                               const std::vector<Eigen::Vector3d> points3D,
+                                                               const py::dict &ransac_opt_dict,
+                                                               const py::dict &bundle_opt_dict) {
+
+    RansacOptions ransac_opt;
+    update_ransac_options(ransac_opt_dict, ransac_opt);
+
+    BundleOptions bundle_opt;
+    bundle_opt.loss_scale = 0.5 * ransac_opt.max_reproj_error;
+    update_bundle_options(bundle_opt_dict, bundle_opt);
+
+    RSCameraPose pose;
+    std::vector<char> inlier_mask;
+    RansacStats stats = estimate_pnp_r6p_iter_rs_lo_absolute_pose(points2D, points3D, ransac_opt, bundle_opt, &pose, &inlier_mask);
     // RansacStats stats;
     py::dict output_dict;
     write_to_dict(stats, output_dict);
@@ -811,6 +840,7 @@ PYBIND11_MODULE(poselib, m) {
     // Minimal solvers
     m.def("p3p", &poselib::p3p_wrapper, py::arg("x"), py::arg("X"));
     m.def("r6p", &poselib::r6p_wrapper, py::arg("x"), py::arg("X"));
+    m.def("r6p_iter", &poselib::r6p_iter_wrapper, py::arg("x"), py::arg("X"));
     m.def("gp3p", &poselib::gp3p_wrapper, py::arg("p"), py::arg("x"), py::arg("X"));
     m.def("gp4ps", &poselib::gp4ps_wrapper, py::arg("p"), py::arg("x"), py::arg("X"), py::arg("filter_solutions"));
     m.def("gp4ps_kukelova", &poselib::gp4ps_kukelova_wrapper, py::arg("p"), py::arg("x"), py::arg("X"),
@@ -846,6 +876,8 @@ PYBIND11_MODULE(poselib, m) {
     m.def("estimate_rs_absolute_pose", &poselib::estimate_rs_absolute_pose_wrapper, py::arg("points2D"), py::arg("points3D"), py::arg("ransac_opt") = py::dict(), py::arg("bundle_opt") = py::dict(),
           "RS Absolute pose estimation with non-linear refinement.");
     m.def("estimate_pnp_rs_lo_absolute_pose", &poselib::estimate_pnp_rs_lo_absolute_pose_wrapper, py::arg("points2D"), py::arg("points3D"), py::arg("ransac_opt") = py::dict(), py::arg("bundle_opt") = py::dict(),
+          "RS Absolute pose estimation with non-linear refinement.");
+    m.def("estimate_pnp_r6p_iter_rs_lo_absolute_pose", &poselib::estimate_pnp_r6p_iter_rs_lo_absolute_pose_wrapper, py::arg("points2D"), py::arg("points3D"), py::arg("ransac_opt") = py::dict(), py::arg("bundle_opt") = py::dict(),
           "RS Absolute pose estimation with non-linear refinement.");
     m.def("estimate_absolute_pose_pnpl", &poselib::estimate_absolute_pose_pnpl_wrapper, py::arg("points2D"),
           py::arg("points3D"), py::arg("lines2D_1"), py::arg("lines2D_2"), py::arg("lines3D_1"), py::arg("lines3D_2"),
